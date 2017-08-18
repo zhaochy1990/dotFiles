@@ -6,6 +6,7 @@ let mapleader = ","
 nnoremap <leader>ev :vsplit $VIMRC<cr>
 " source my vimrc file
 nnoremap <leader>sv :source $VIMRC<cr>
+
 " quit
 nnoremap <leader>q :q<cr>
 " save
@@ -18,4 +19,28 @@ autocmd BufWritePre,BufRead *.html :normal gg=G
 autocmd FileType python     :iabbrev <buffer> iff if:<left> 
 autocmd FileType javascript :iabbrev <buffer> iff if ()<left>
 
+call plug#begin('~/.vim/plugged')
 
+" VIM UI{
+  Plug 'scrooloose/nerdtree'
+  Plug 'Xuyuanp/nerdtree-git-plugin'
+" }
+
+" Initialize plugin system
+call plug#end()
+
+map <C-n> :NERDTreeToggle<CR>
+" ```vimscript
+let g:NERDTreeIndicatorMapCustom = {
+    \ "Modified"  : "✹",
+    \ "Staged"    : "✚",
+    \ "Untracked" : "✭",
+    \ "Renamed"   : "➜",
+    \ "Unmerged"  : "═",
+    \ "Deleted"   : "✖",
+    \ "Dirty"     : "✗",
+    \ "Clean"     : "✔︎",
+    \ 'Ignored'   : '☒',
+    \ "Unknown"   : "?"
+    \ }
+"```
