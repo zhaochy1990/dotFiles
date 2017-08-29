@@ -1,12 +1,13 @@
-" show line number
-set number numberwidth=2
+" neovim config for zhaochy
+
+
 let mapleader = ","
 
 
 " Automatically detect file types.
 filetype plugin indent on
-set nowrap                      " Do not wrap long lines
-set autoindent                  " Indent at the same level of the previous line
+"syntax on
+set nowrap                      " Do not wrap long lines set autoindent                  " Indent at the same level of the previous line
 set shiftwidth=4                " Use indents of 4 spaces
 set expandtab                   " Tabs are spaces, not tabs
 set tabstop=4                   " An indentation every four columns
@@ -16,15 +17,16 @@ set nojoinspaces                " Prevents inserting two spaces after punctuatio
 "set splitbelow                  " Puts new split windows to the bottom of the current
 set hlsearch                    " 高亮搜索结果
 
-" 相对行号: 行号变成相对，可以用 nj/nk 进行跳转
-set relativenumber number
-au FocusLost * :set norelativenumber number
-au FocusGained * :set relativenumber
-" 插入模式下用绝对行号, 普通模式下用相对
-autocmd InsertEnter * :set norelativenumber number
-autocmd InsertLeave * :set relativenumber
+set updatetime=250
 
+" 显示当前的行号列号
+set ruler
+" 在状态栏显示正在输入的命令
+set showcmd " 左下角显示当前vim模式
+set showmode
 
+" 在上下移动光标时，光标的上方或下方至少会保留显示的行数
+set scrolloff=7
 
 " 代码折叠 {{{
 set foldenable
@@ -35,7 +37,9 @@ set foldlevel=0
 " }}}
 
 " 插件 {{{
-call plug#begin('~/.vim/plugged')
+call plug#begin('~/.config/nvim/plugged')
+
+Plug 'hyiltiz/vim-plugins-profile'
 
 " UI: {{{
 " nerdtree
@@ -52,22 +56,44 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-ctrlspace/vim-ctrlspace'
 "Plug 'christoomey/vim-tmux-navigator'
+Plug 'Yggdroot/indentLine'
+Plug 'airblade/vim-gitgutter'
 " }}}
 
 " Coding {{{
-Plug 'valloric/youcompleteme'
+"Plug 'valloric/youcompleteme'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+"Plug 'Shougo/neoinclude.vim'
+
+"This extension allows you to use [jsbeautifier] (http://jsbeautifier.org/) 
+"inside vim to quickly format javascript, html and css files.
+"Version 1.0 also supports the [editorconfig] (http://editorconfig.org/) file.
+"Plug 'maksimr/vim-jsbeautify'
+
 Plug 'chiel92/vim-autoformat'
+" 快速注释
 Plug 'scrooloose/nerdcommenter'
+" 快速移动
 Plug 'Lokaltog/vim-easymotion'
+" 标记和跳转
 Plug 'kshenoy/vim-signature'
+" snippets
 Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
+" easy align
+Plug 'junegunn/vim-easy-align'
+Plug 'terryma/vim-expand-region'
+Plug 'jiangmiao/auto-pairs'
 "}}}
 
 " Language {{{
 
 " Javascript {{{
+" 语法高亮
 Plug 'pangloss/vim-javascript'
-Plug 'isruslan/vim-es6'
+"Plug 'isruslan/vim-es6'
+Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
+Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 " }}}
 
 " Typescript {{{
@@ -75,12 +101,14 @@ Plug 'HerringtonDarkholme/yats.vim'
 " Navigate to the location where a symbol is defined.
 " Show location(s) where a symbol is referenced.
 " Display a list of syntax and semantics errors o Vim quickfix window.
-"Plug 'Quramy/tsuquyomi'
+Plug 'Quramy/tsuquyomi'
 Plug 'Shougo/vimproc.vim'
+Plug 'mhartington/nvim-typescript'
 " }}}
 
 "Go {{{
 Plug 'fatih/vim-go', {'for': 'go'}
+Plug 'zchee/deoplete-go'
 "}}}
 
 " }}}
@@ -90,6 +118,18 @@ call plug#end()
 " }}}
 
 " UI Config {{{
+
+" 行号 {{{
+" show line number
+set number numberwidth=2
+" 相对行号: 行号变成相对，可以用 nj/nk 进行跳转
+set relativenumber number
+au FocusLost * :set norelativenumber number
+au FocusGained * :set relativenumber
+" 插入模式下用绝对行号, 普通模式下用相对
+autocmd InsertEnter * :set norelativenumber number
+autocmd InsertLeave * :set relativenumber
+"}}}
 
 " NERDTree Config {{{
 " close vim if the only window left open is a NERDTree
@@ -125,7 +165,7 @@ colorscheme solarized
 "let g:solarized_termcolors=256
 " }}}
 
-" 设置可以高亮的关键字
+" 设置可以高亮的关键字 {{{
 if has("autocmd")
     " Highlight TODO, FIXME, NOTE, INFO, etc.
     if v:version > 701
@@ -133,6 +173,7 @@ if has("autocmd")
         autocmd Syntax * call matchadd('Debug', '\W\zs\(NOTE\|INFO\|IDEA\|NOTICE\)')
     endif
 endif
+" }}}
 
 "设置 Ctrl-Space {{{
 set nocompatible
@@ -140,6 +181,9 @@ set hidden
 if executable("ag")
     let g:CtrlSpaceGlobCommand = 'ag -l --nocolor -g ""'
 endif
+" 下面这行在C-space最后面加了个空格，要不然ctrl-space不work
+" see https://github.com/vim-ctrlspace/vim-ctrlspace/issues/188
+let g:CtrlSpaceDefaultMappingKey = "<C-space> "
 "let g:CtrlSpaceSearchTiming = 500
 " }}}
 
@@ -152,6 +196,9 @@ noremap <F8> :Autoformat<CR>
 nmap <F9> :TagbarToggle<CR>
 " have code be formatted upon saving the file
 " au BufWrite * :Autoformat
+
+" 从terminal模式下退出
+tnoremap <Esc> <C-\><C-n>
 
 " 复制选中区到系统剪切板中
 vnoremap <leader>y "+y
@@ -199,19 +246,55 @@ nnoremap <leader>w :w<cr>
 nnoremap <space> viw
 
 " 分屏快速移动 {{{
-map <C-J> <C-W>j<C-W>_
-map <C-K> <C-W>k<C-W>_
-map <C-L> <C-W>l<C-W>_
-map <C-H> <C-W>h<C-W>_
+"map <C-J> <C-W>j<C-W>_
+"map <C-K> <C-W>k<C-W>_
+"map <C-L> <C-W>l<C-W>_
+"map <C-H> <C-W>h<C-W>_
+map <C-J> <C-W>j
+map <C-K> <C-W>k
+map <C-L> <C-W>l
+map <C-H> <C-W>h
 "}}}
+
+" vim-easy-align {{{
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
+" }}}
 
 " }}}
 
 " Language {{{
 
 " JavaScript {{{
+
+autocmd Filetype javascript setlocal ts=4 sw=4 sts=0 expandtab
+
 let g:javascript_plugin_jsdoc = 1
-set conceallevel=1
+"set conceallevel=1
+
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+let g:deoplete#omni#functions = {}
+let g:deoplete#omni#functions.javascript = [
+            \ 'tern#Complete',
+            \ 'jspc#omni'
+            \]
+set completeopt=longest,menuone,preview
+let g:deoplete#sources = {}
+let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']
+" Whether to include the types of the completions in the result data.
+" Default: 0
+let g:deoplete#sources#ternjs#types = 1
+
+" When completing a property and no completions are found, Tern will use some
+" heuristics to try and return some properties anyway. Set this to 0 to
+" turn that off. Default: 1
+let g:deoplete#sources#ternjs#guess = 0
+
 " }}}
 
 " Go {{{
@@ -229,41 +312,27 @@ let g:ycm_semantic_triggers['typescript'] = ['.']
 
 " Coding {{{
 
-" YouCompleteMe {{{
-let g:ycm_autoclose_preview_window_after_completion=1
-let g:ycm_key_list_select_completion=['<c-j>']
-"let g:ycm_key_list_select_completion = ['<Down>']
-let g:ycm_key_list_previous_completion=['<c-k>']
-"let g:ycm_key_list_previous_completion = ['<Up>']
-let g:ycm_complete_in_comments = 1  "在注释输入中也能补全
-let g:ycm_complete_in_strings = 1   "在字符串输入中也能补全
-let g:ycm_use_ultisnips_completer = 1 "提示UltiSnips
-"let g:ycm_collect_identifiers_from_comments_and_strings=1   "注释和字符串中的文字也会被收入补全
-let g:ycm_collect_identifiers_from_tags_files = 1
-" 开启语法关键字补全
-let g:ycm_seed_identifiers_with_syntax=1
-" 回车作为选中
-let g:ycm_key_list_stop_completion = ['<CR>']
-
-"let g:ycm_seed_identifiers_with_syntax=1   "语言关键字补全, 不过python关键字都很短，所以，需要的自己打开
-
-" 跳转到定义处, 分屏打开
-let g:ycm_goto_buffer_command = 'horizontal-split'
-let g:ycm_register_as_syntastic_checker = 0
-" nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
-nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR>
-nnoremap <leader>gd :YcmCompleter GoToDeclaration<CR>
+" Use deoplete. {{{
+let g:deoplete#enable_at_startup = 1
+" 使用相对路径，"./"会从当前文件的目录开始，而不是vim的working-directory
+let g:deoplete#file#enable_buffer_path=1
+" 补全结束之后关闭预览窗口
+autocmd CompleteDone * silent! pclose!
 " }}}
 
 " ultisnips {{{
 let g:UltiSnipsExpandTrigger       = "<tab>"
 let g:UltiSnipsJumpForwardTrigger  = "<tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
-let g:UltiSnipsSnippetDirectories  = ['UltiSnips']
-let g:UltiSnipsSnippetsDir = '~/.vim/UltiSnips'
-" 定义存放代码片段的文件夹 .vim/UltiSnips下，使用自定义和默认的，将会的到全局，有冲突的会提示
+
+" 定义存放代码片段的文件夹，使用自定义和默认的，有冲突的会提示
+let g:UltiSnipsSnippetDirectories  = ['~/.config/nvim/UltiSnips', 'UltiSnips']
+let g:UltiSnipsSnippetsDir = '~/.config/nvim/UltiSnips'
+
 " 进入对应filetype的snippets进行编辑
 map <leader>us :UltiSnipsEdit<CR>
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
 
 " ctrl+j/k 进行选择
 func! g:JInYCM()
@@ -286,7 +355,23 @@ au BufEnter,BufRead * exec "inoremap <silent> " . g:UltiSnipsJumpBackwordTrigger
 let g:UltiSnipsJumpBackwordTrigger = "<c-k>"
 " }}}
 
+" expandregion {{{
+    " map + <Plug>(expand_region_expand)
+    " map _ <Plug>(expand_region_shrink)
+    vmap v <Plug>(expand_region_expand)
+    vmap V <Plug>(expand_region_shrink)
+    " Extend the global default
+    if exists("*expand_region#custom_text_objects")
+        call expand_region#custom_text_objects({
+        \ 'a]' :1,
+        \ 'ab' :1,
+        \ 'aB' :1,
+        \ 'ii' :0,
+        \ 'ai' :0,
+        \ })
+    endif
 
 " }}}
 
+" }}}
 
