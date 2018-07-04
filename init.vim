@@ -3,19 +3,40 @@
 
 let mapleader = ","
 
-
 " Automatically detect file types.
 filetype plugin indent on
 "syntax on
-set nowrap                      " Do not wrap long lines set autoindent                  " Indent at the same level of the previous line
-set shiftwidth=4                " Use indents of 4 spaces
+set nowrap                      " Do not wrap long lines
+set autoindent                  " Indent at the same level of the previous line
 set expandtab                   " Tabs are spaces, not tabs
-set tabstop=4                   " An indentation every four columns
-set softtabstop=4               " Let backspace delete indent
 set nojoinspaces                " Prevents inserting two spaces after punctuation on a join (J)
-"set splitright                  " Puts new vsplit windows to the right of the current
-"set splitbelow                  " Puts new split windows to the bottom of the current
+"set splitright                 " Puts new vsplit windows to the right of the current
+"set splitbelow                 " Puts new split windows to the bottom of the current
 set hlsearch                    " 高亮搜索结果
+" set cursorline                " 高亮当前行
+
+"Indent {{{
+" By default, use indents of 4 spaces
+set shiftwidth=2               " Use indents of 2 spaces
+set tabstop=2                   " An indentation every four columns
+set softtabstop=2               " Let backspace delete indent
+" For javascript, use indents of 2 spaces
+autocmd FileType javascript,typescript,yml set shiftwidth=2
+autocmd FileType javascript,typescript,yml set tabstop=2
+autocmd FileType javascript,typescript,yml set softtabstop=2
+"}}}
+
+" 代码折叠 {{{
+set foldenable
+" 使用{{{}}}来进行代码折叠
+set foldmethod=marker
+"set foldmethod=indent
+" foldlevel设为0，就是折叠所有的代码
+"set foldlevel=999
+set foldlevel=0
+" }}}
+
+highlight MatchParen ctermbg=blue ctermfg=white
 
 set updatetime=250
 
@@ -26,15 +47,8 @@ set showcmd " 左下角显示当前vim模式
 set showmode
 
 " 在上下移动光标时，光标的上方或下方至少会保留显示的行数
-set scrolloff=7
+set scrolloff=15
 
-" 代码折叠 {{{
-set foldenable
-" 使用{{{}}}来进行代码折叠
-set foldmethod=marker
-" foldlevel设为0，就是折叠所有的代码
-set foldlevel=0
-" }}}
 
 " 插件 {{{
 call plug#begin('~/.config/nvim/plugged')
@@ -46,23 +60,21 @@ Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 " tagbar
 Plug 'majutsushi/tagbar'
-" tagbar的javascript插件
-Plug 'hushicai/tagbar-javascript.vim'
 " solarized主题
 Plug 'altercation/vim-colors-solarized'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-ctrlspace/vim-ctrlspace'
-"Plug 'christoomey/vim-tmux-navigator'
+Plug 'christoomey/vim-tmux-navigator'
 Plug 'Yggdroot/indentLine'
 Plug 'airblade/vim-gitgutter'
+Plug 'kien/rainbow_parentheses.vim'
 " }}}
 
-" Coding {{{
+" Editor {{{
 " Asynchronous Lint Engine
 Plug 'w0rp/ale'
 Plug 'valloric/youcompleteme'
-"Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 "Plug 'Shougo/neoinclude.vim'
 
 "This extension allows you to use [jsbeautifier] (http://jsbeautifier.org/)
@@ -86,6 +98,21 @@ Plug 'jiangmiao/auto-pairs'
 
 " Global Search
 Plug 'dyng/ctrlsf.vim'
+
+" Quick Run
+Plug 'thinca/vim-quickrun'
+
+" Dash Document
+Plug 'rizzatti/dash.vim'
+
+"}}}
+
+"Run {{{
+
+" Mocha {{{
+Plug 'janko-m/vim-test'
+" }}}
+
 "}}}
 
 " Language {{{
@@ -95,7 +122,6 @@ Plug 'dyng/ctrlsf.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'isruslan/vim-es6'
 Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
-"Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 " }}}
 
@@ -110,13 +136,16 @@ Plug 'HerringtonDarkholme/yats.vim'
 " Display a list of syntax and semantics errors o Vim quickfix window.
 Plug 'Quramy/tsuquyomi'
 Plug 'Shougo/vimproc.vim'
-Plug 'mhartington/nvim-typescript'
+"Plug 'mhartington/nvim-typescript'
 " }}}
 
 "Go {{{
 Plug 'fatih/vim-go', {'for': 'go'}
-"Plug 'zchee/deoplete-go'
 "}}}
+
+" ProtoBuf {{{
+Plug 'uarun/vim-protobuf'
+" }}}
 
 " }}}
 
@@ -124,7 +153,7 @@ Plug 'fatih/vim-go', {'for': 'go'}
 call plug#end()
 " }}}
 
-" UI Config {{{
+" UI 相关配置 {{{
 
 " 行号 {{{
 " show line number
@@ -162,7 +191,7 @@ call NERDTreeHighlightFile('css', 'cyan', 'none', 'cyan', '#151515')
 call NERDTreeHighlightFile('php', 'Magenta', 'none', '#ff00ff', '#151515')
 " }}}
 
-" 设置主题为Solarized {{{
+" 设置主题 {{{
 syntax enable
 "set background=dark
 "set background=light
@@ -194,10 +223,42 @@ let g:CtrlSpaceDefaultMappingKey = "<C-space> "
 "let g:CtrlSpaceSearchTiming = 500
 " }}}
 
+" 括号显示增强 rainbow_parentheses {{{
+" 不加入这行, 防止黑色括号出现, 很难识别
+" \ ['black',       'SeaGreen3'],
+let g:rbpt_colorpairs = [
+            \ ['brown',       'RoyalBlue3'],
+            \ ['Darkblue',    'SeaGreen3'],
+            \ ['darkgray',    'DarkOrchid3'],
+            \ ['darkgreen',   'firebrick3'],
+            \ ['darkcyan',    'RoyalBlue3'],
+            \ ['darkred',     'SeaGreen3'],
+            \ ['darkmagenta', 'DarkOrchid3'],
+            \ ['brown',       'firebrick3'],
+            \ ['gray',        'RoyalBlue3'],
+            \ ['darkmagenta', 'DarkOrchid3'],
+            \ ['Darkblue',    'firebrick3'],
+            \ ['darkgreen',   'RoyalBlue3'],
+            \ ['darkcyan',    'SeaGreen3'],
+            \ ['darkred',     'DarkOrchid3'],
+            \ ['red',         'firebrick3'],
+            \ ]
+
+let g:rbpt_max = 16
+let g:rbpt_loadcmd_toggle = 0
+
+" always on
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+" }}}
+
 " }}}
 
 " Key Map {{{
-
+" Turn off highlight until the next search
+nnoremap <F3> :noh<CR>
 set pastetoggle=<F5>
 noremap <F8> :Autoformat<CR>
 nmap <F9> :TagbarToggle<CR>
@@ -283,45 +344,14 @@ autocmd Filetype javascript setlocal ts=2 sw=2 sts=0 expandtab
 
 let g:javascript_plugin_jsdoc = 1
 "set conceallevel=1
-
-autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-let g:deoplete#omni#functions = {}
-let g:deoplete#omni#functions.javascript = [
-            \ 'tern#Complete',
-            \ 'jspc#omni'
-            \]
-set completeopt=longest,menuone,preview
-let g:deoplete#sources = {}
-let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
-let g:tern#command = ['tern']
-let g:tern#arguments = ['--persistent']
-
-" Whether to include the types of the completions in the result data. Default: 0
-let g:deoplete#sources#ternjs#types = 1
-" Whether to include the distance (in scopes for variables, in prototypes for
-" properties) between the completions and the origin position in the result
-" data. Default: 0
-let g:deoplete#sources#ternjs#depths = 1
-" Whether to include documentation strings (if found) in the result data.
-" Default: 0
-let g:deoplete#sources#ternjs#docs = 1
-" When completing a property and no completions are found, Tern will use some
-" heuristics to try and return some properties anyway. Set this to 0 to
-" turn that off. Default: 1
-let g:deoplete#sources#ternjs#guess = 0
-" Whether to ignore the properties of Object.prototype unless they have been
-" spelled out by at least two characters. Default: 1
-let g:deoplete#sources#ternjs#omit_object_prototype = 0
-" Whether to include JavaScript keywords when completing something that is not
-" a property. Default: 0
-let g:deoplete#sources#ternjs#include_keywords = 1
 " }}}
 
 " Go {{{
-Plug 'fatih/vim-go', {'for': 'go'}
 " }}}
 
 " Typescript {{{
+autocmd Filetype typescript setlocal ts=2 sw=2 sts=0 expandtab
+
 if !exists("g:ycm_semantic_triggers")
     let g:ycm_semantic_triggers = {}
 endif
@@ -339,6 +369,7 @@ let g:ycm_semantic_triggers['typescript'] = ['.']
 let g:ale_linters = {
             \   'python': ['flake8'],
             \   'javascript': ['eslint'],
+            \   'typescript': ['tslint'],
             \}
 " E501 -> 120 chars
 let g:ale_python_flake8_args="--ignore=E114,E116,E131 --max-line-length=120"
@@ -385,13 +416,17 @@ let g:ale_fixers = {
             \   'javascript': [
             \       'eslint',
             \   ],
+            \   'typescript': [
+            \       'tslint',
+            \    ]
             \}
 "let g:ale_fix_on_save = 1
 
 " }}}
 
 " Use YCM {{{
-let g:ycm_autoclose_preview_window_after_completion = 1
+" auto close the preview window
+let g:ycm_autoclose_preview_window_after_completion = 0
 let g:ycm_add_preview_to_completeopt = 1
 let g:ycm_key_list_select_completion = ['<Down>']
 let g:ycm_key_list_previous_completion = ['<Up>']
@@ -474,5 +509,29 @@ endif
 
 " }}}
 
+" Quick Run {{{
+let g:quickrun_config = {
+            \   "_" : {
+            \       "outputter" : "message",
+            \   },
+            \}
+
+let g:quickrun_no_default_key_mappings = 1
+nmap <Leader>r <Plug>(quickrun)
+map <F10> :QuickRun<CR>
 " }}}
 
+" }}}
+
+"RUN {{{
+
+"TEST {{{
+let test#strategy = "neovim"
+nmap <silent> t<C-n> :TestNearest<CR> " t Ctrl+n
+nmap <silent> t<C-f> :TestFile<CR>    " t Ctrl+f
+nmap <silent> t<C-s> :TestSuite<CR>   " t Ctrl+s
+nmap <silent> t<C-l> :TestLast<CR>    " t Ctrl+l
+nmap <silent> t<C-g> :TestVisit<CR>   " t Ctrl+g
+"}}}
+
+"}}}
