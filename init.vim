@@ -39,8 +39,6 @@ set foldlevel=0
 " 插件 {{{
 call plug#begin('~/.config/nvim/plugged')
 
-Plug 'hyiltiz/vim-plugins-profile'
-
 " UI: {{{
 " nerdtree
 Plug 'scrooloose/nerdtree'
@@ -61,11 +59,13 @@ Plug 'airblade/vim-gitgutter'
 " }}}
 
 " Coding {{{
-"Plug 'valloric/youcompleteme'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Asynchronous Lint Engine
+Plug 'w0rp/ale'
+Plug 'valloric/youcompleteme'
+"Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 "Plug 'Shougo/neoinclude.vim'
 
-"This extension allows you to use [jsbeautifier] (http://jsbeautifier.org/) 
+"This extension allows you to use [jsbeautifier] (http://jsbeautifier.org/)
 "inside vim to quickly format javascript, html and css files.
 "Version 1.0 also supports the [editorconfig] (http://editorconfig.org/) file.
 "Plug 'maksimr/vim-jsbeautify'
@@ -83,6 +83,9 @@ Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 Plug 'junegunn/vim-easy-align'
 Plug 'terryma/vim-expand-region'
 Plug 'jiangmiao/auto-pairs'
+
+" Global Search
+Plug 'dyng/ctrlsf.vim'
 "}}}
 
 " Language {{{
@@ -90,10 +93,14 @@ Plug 'jiangmiao/auto-pairs'
 " Javascript {{{
 " 语法高亮
 Plug 'pangloss/vim-javascript'
-"Plug 'isruslan/vim-es6'
+Plug 'isruslan/vim-es6'
 Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
-Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
+"Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
+" }}}
+
+" Python {{{
+"Plug 'zchee/deoplete-jedi'
 " }}}
 
 " Typescript {{{
@@ -108,7 +115,7 @@ Plug 'mhartington/nvim-typescript'
 
 "Go {{{
 Plug 'fatih/vim-go', {'for': 'go'}
-Plug 'zchee/deoplete-go'
+"Plug 'zchee/deoplete-go'
 "}}}
 
 " }}}
@@ -157,9 +164,9 @@ call NERDTreeHighlightFile('php', 'Magenta', 'none', '#ff00ff', '#151515')
 
 " 设置主题为Solarized {{{
 syntax enable
-set background=dark
+"set background=dark
 "set background=light
-colorscheme solarized
+"colorscheme solarized
 " 默认是16色的
 "let g:solarized_termcolors=16
 "let g:solarized_termcolors=256
@@ -202,6 +209,8 @@ tnoremap <Esc> <C-\><C-n>
 
 " 复制选中区到系统剪切板中
 vnoremap <leader>y "+y
+" select all
+map <Leader>sa ggVG
 
 " w!! to sudo & write a file
 cmap w!! w !sudo tee >/dev/null %
@@ -270,7 +279,7 @@ nmap ga <Plug>(EasyAlign)
 
 " JavaScript {{{
 
-autocmd Filetype javascript setlocal ts=4 sw=4 sts=0 expandtab
+autocmd Filetype javascript setlocal ts=2 sw=2 sts=0 expandtab
 
 let g:javascript_plugin_jsdoc = 1
 "set conceallevel=1
@@ -286,15 +295,26 @@ let g:deoplete#sources = {}
 let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
 let g:tern#command = ['tern']
 let g:tern#arguments = ['--persistent']
-" Whether to include the types of the completions in the result data.
-" Default: 0
-let g:deoplete#sources#ternjs#types = 1
 
+" Whether to include the types of the completions in the result data. Default: 0
+let g:deoplete#sources#ternjs#types = 1
+" Whether to include the distance (in scopes for variables, in prototypes for
+" properties) between the completions and the origin position in the result
+" data. Default: 0
+let g:deoplete#sources#ternjs#depths = 1
+" Whether to include documentation strings (if found) in the result data.
+" Default: 0
+let g:deoplete#sources#ternjs#docs = 1
 " When completing a property and no completions are found, Tern will use some
 " heuristics to try and return some properties anyway. Set this to 0 to
 " turn that off. Default: 1
 let g:deoplete#sources#ternjs#guess = 0
-
+" Whether to ignore the properties of Object.prototype unless they have been
+" spelled out by at least two characters. Default: 1
+let g:deoplete#sources#ternjs#omit_object_prototype = 0
+" Whether to include JavaScript keywords when completing something that is not
+" a property. Default: 0
+let g:deoplete#sources#ternjs#include_keywords = 1
 " }}}
 
 " Go {{{
@@ -312,12 +332,93 @@ let g:ycm_semantic_triggers['typescript'] = ['.']
 
 " Coding {{{
 
+" ale {{{
+" pip install flake8
+" npm install -g eslint eslint-plugin-standard eslint-plugin-promise eslint-config-standard
+" npm install -g eslint-plugin-import eslint-plugin-node eslint-plugin-html babel-eslint
+let g:ale_linters = {
+            \   'python': ['flake8'],
+            \   'javascript': ['eslint'],
+            \}
+" E501 -> 120 chars
+let g:ale_python_flake8_args="--ignore=E114,E116,E131 --max-line-length=120"
+" --ignore=E225,E124,E712,E116
+
+"let g:ale_sign_error = '>>'
+let g:ale_sign_error = 'E'
+"let g:ale_sign_warning = '>'
+let g:ale_sign_warning = 'W'
+
+" vim-airline integrates with ALE for displaying error information in the status bar.
+" If you want to see the status for ALE in a nice format, it is recommended to use
+" vim-airline with ALE. The airline extension can be enabled by adding the following
+" to your vimrc:
+" Set this. Airline will handle the rest.
+let g:airline#extensions#ale#enabled = 1
+
+let g:ale_statusline_format = ['⨉ %d', '⚠ %d', '⬥ ok']
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+
+nmap <silent> <Leader>ep <Plug>(ale_previous_wrap)
+nmap <silent> <Leader>en <Plug>(ale_next_wrap)
+
+nnoremap <silent> <Leader>ec :ALEToggle<CR>
+
+" troggle quickfix list
+function! ToggleErrors()
+    let old_last_winnr = winnr('$')
+    lclose
+    if old_last_winnr == winnr('$')
+        " Nothing was closed, open syntastic_error location panel
+        lopen
+    endif
+endfunction
+nnoremap <Leader>s :call ToggleErrors()<cr>
+
+let g:ale_set_highlights = 1
+"highlight clear ALEErrorSign
+"highlight clear ALEWarningSign
+
+let g:ale_fixers = {
+            \   'javascript': [
+            \       'eslint',
+            \   ],
+            \}
+"let g:ale_fix_on_save = 1
+
+" }}}
+
+" Use YCM {{{
+let g:ycm_autoclose_preview_window_after_completion = 1
+let g:ycm_add_preview_to_completeopt = 1
+let g:ycm_key_list_select_completion = ['<Down>']
+let g:ycm_key_list_previous_completion = ['<Up>']
+let g:ycm_complete_in_comments = 1  "在注释输入中也能补全
+let g:ycm_complete_in_strings = 1   "在字符串输入中也能补全
+let g:ycm_use_ultisnips_completer = 1 "提示UltiSnips
+" 开启语法关键字补全
+let g:ycm_seed_identifiers_with_syntax=1
+" 回车作为选中
+let g:ycm_key_list_stop_completion = ['<CR>']
+
+"let g:ycm_seed_identifiers_with_syntax=1   "语言关键字补全, 不过python关键字都很短，所以，需要的自己打开
+
+" 跳转到定义处, 分屏打开
+let g:ycm_goto_buffer_command = 'horizontal-split'
+let g:ycm_register_as_syntastic_checker = 0
+" nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR>
+nnoremap <leader>gd :YcmCompleter GoToDeclaration<CR>
+" }}}
+
 " Use deoplete. {{{
-let g:deoplete#enable_at_startup = 1
+"let g:deoplete#enable_at_startup = 1
 " 使用相对路径，"./"会从当前文件的目录开始，而不是vim的working-directory
-let g:deoplete#file#enable_buffer_path=1
+"let g:deoplete#file#enable_buffer_path=1
 " 补全结束之后关闭预览窗口
-autocmd CompleteDone * silent! pclose!
+"autocmd CompleteDone * silent! pclose!
 " }}}
 
 " ultisnips {{{
@@ -356,20 +457,20 @@ let g:UltiSnipsJumpBackwordTrigger = "<c-k>"
 " }}}
 
 " expandregion {{{
-    " map + <Plug>(expand_region_expand)
-    " map _ <Plug>(expand_region_shrink)
-    vmap v <Plug>(expand_region_expand)
-    vmap V <Plug>(expand_region_shrink)
-    " Extend the global default
-    if exists("*expand_region#custom_text_objects")
-        call expand_region#custom_text_objects({
-        \ 'a]' :1,
-        \ 'ab' :1,
-        \ 'aB' :1,
-        \ 'ii' :0,
-        \ 'ai' :0,
-        \ })
-    endif
+" map + <Plug>(expand_region_expand)
+" map _ <Plug>(expand_region_shrink)
+vmap v <Plug>(expand_region_expand)
+vmap V <Plug>(expand_region_shrink)
+" Extend the global default
+if exists("*expand_region#custom_text_objects")
+    call expand_region#custom_text_objects({
+                \ 'a]' :1,
+                \ 'ab' :1,
+                \ 'aB' :1,
+                \ 'ii' :0,
+                \ 'ai' :0,
+                \ })
+endif
 
 " }}}
 

@@ -1,6 +1,10 @@
+"configure file for mac-vim
+
 " show line number
 set number numberwidth=2
 let mapleader = ","
+
+set guioptions=
 
 
 " Automatically detect file types.
@@ -27,7 +31,7 @@ autocmd InsertLeave * :set relativenumber
 
 
 " 代码折叠 {{{
-set foldenable
+" set foldenable
 " 使用{{{}}}来进行代码折叠
 set foldmethod=marker
 " foldlevel设为0，就是折叠所有的代码
@@ -48,6 +52,7 @@ Plug 'majutsushi/tagbar'
 Plug 'hushicai/tagbar-javascript.vim'
 " solarized主题
 Plug 'altercation/vim-colors-solarized'
+
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-ctrlspace/vim-ctrlspace'
@@ -116,7 +121,7 @@ call NERDTreeHighlightFile('php', 'Magenta', 'none', '#ff00ff', '#151515')
 " }}}
 
 " 设置主题为Solarized {{{
-syntax enable
+"syntax enable
 set background=dark
 "set background=light
 colorscheme solarized
