@@ -16,14 +16,10 @@ set hlsearch                    " 高亮搜索结果
 " set cursorline                " 高亮当前行
 
 "Indent {{{
-" By default, use indents of 4 spaces
-set shiftwidth=2               " Use indents of 2 spaces
+" By default, use indents of 2 spaces
+set shiftwidth=2                " Use indents of 2 spaces
 set tabstop=2                   " An indentation every four columns
 set softtabstop=2               " Let backspace delete indent
-" For javascript, use indents of 2 spaces
-autocmd FileType javascript,typescript,yml set shiftwidth=2
-autocmd FileType javascript,typescript,yml set tabstop=2
-autocmd FileType javascript,typescript,yml set softtabstop=2
 "}}}
 
 " 代码折叠 {{{
@@ -43,11 +39,12 @@ set updatetime=250
 " 显示当前的行号列号
 set ruler
 " 在状态栏显示正在输入的命令
-set showcmd " 左下角显示当前vim模式
+set showcmd
+" 左下角显示当前vim模式
 set showmode
 
 " 在上下移动光标时，光标的上方或下方至少会保留显示的行数
-set scrolloff=15
+set scrolloff=14
 
 
 " 插件 {{{
@@ -62,13 +59,18 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'majutsushi/tagbar'
 " solarized主题
 Plug 'altercation/vim-colors-solarized'
+
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-ctrlspace/vim-ctrlspace'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'Yggdroot/indentLine'
 Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive'
 Plug 'kien/rainbow_parentheses.vim'
+" use fzf instead of CtrlP for fuzzy finding
+" fzf supports asynchronous finding
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 " }}}
 
 " Editor {{{
@@ -99,11 +101,10 @@ Plug 'jiangmiao/auto-pairs'
 " Global Search
 Plug 'dyng/ctrlsf.vim'
 
-" Quick Run
-Plug 'thinca/vim-quickrun'
-
 " Dash Document
 Plug 'rizzatti/dash.vim'
+
+Plug 'craigemery/vim-autotag'
 
 "}}}
 
@@ -112,6 +113,9 @@ Plug 'rizzatti/dash.vim'
 " Mocha {{{
 Plug 'janko-m/vim-test'
 " }}}
+
+" Quick Run
+Plug 'thinca/vim-quickrun'
 
 "}}}
 
@@ -136,7 +140,7 @@ Plug 'HerringtonDarkholme/yats.vim'
 " Display a list of syntax and semantics errors o Vim quickfix window.
 Plug 'Quramy/tsuquyomi'
 Plug 'Shougo/vimproc.vim'
-"Plug 'mhartington/nvim-typescript'
+"Plug 'mhartington/nvim-typescript', { 'do': './install.sh' }
 " }}}
 
 "Go {{{
@@ -170,6 +174,12 @@ autocmd InsertLeave * :set relativenumber
 " NERDTree Config {{{
 " close vim if the only window left open is a NERDTree
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+let NERDTreeShowLineNumbers=1
+let NERDTreeAutoCenter=1
+let g:nerdtree_tabs_open_on_console_startup=1
+let NERDTreeIgnore=['\.pyc','\~$','\.swp']
+let NERDTreeShowBookmarks=1
 
 " NERDTress File highlighting
 function! NERDTreeHighlightFile(extension, fg, bg, guifg, guibg)
@@ -254,6 +264,26 @@ au Syntax * RainbowParenthesesLoadSquare
 au Syntax * RainbowParenthesesLoadBraces
 " }}}
 
+" Tagbar {{{
+
+" Typescript support {{{
+let g:tagbar_type_typescript = {
+  \ 'ctagstype': 'typescript',
+  \ 'kinds': [
+    \ 'c:classes',
+    \ 'n:modules',
+    \ 'f:functions',
+    \ 'v:variables',
+    \ 'v:varlambdas',
+    \ 'm:members',
+    \ 'i:interfaces',
+    \ 'e:enums',
+  \ ]
+\ }
+" }}}
+
+" }}}
+
 " }}}
 
 " Key Map {{{
@@ -334,28 +364,31 @@ xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 " }}}
 
+" use ctrl-p for fuzzy finding
+map <C-p> :call ContextualFZF()<CR>
 " }}}
 
 " Language {{{
 
 " JavaScript {{{
 
-autocmd Filetype javascript setlocal ts=2 sw=2 sts=0 expandtab
+autocmd Filetype javascript setlocal ts=2 sw=2 sts=2 expandtab
 
 let g:javascript_plugin_jsdoc = 1
-"set conceallevel=1
+
 " }}}
 
 " Go {{{
 " }}}
 
 " Typescript {{{
-autocmd Filetype typescript setlocal ts=2 sw=2 sts=0 expandtab
+autocmd Filetype typescript setlocal ts=2 sw=2 sts=2 expandtab
 
 if !exists("g:ycm_semantic_triggers")
     let g:ycm_semantic_triggers = {}
 endif
 let g:ycm_semantic_triggers['typescript'] = ['.']
+
 " }}}
 
 " }}}
@@ -390,10 +423,14 @@ let g:airline#extensions#ale#enabled = 1
 let g:ale_statusline_format = ['⨉ %d', '⚠ %d', '⬥ ok']
 let g:ale_echo_msg_error_str = 'E'
 let g:ale_echo_msg_warning_str = 'W'
-let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+let g:ale_echo_msg_format = '[%linter%] [%code%] %s [%severity%]'
 
-nmap <silent> <Leader>ep <Plug>(ale_previous_wrap)
-nmap <silent> <Leader>en <Plug>(ale_next_wrap)
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_save = 1
+let g:ale_lint_on_enter = 0
+
+" fix errors
+nmap <silent> <Leader>f :ALEFix<CR>
 
 nnoremap <silent> <Leader>ec :ALEToggle<CR>
 
@@ -426,19 +463,23 @@ let g:ale_fixers = {
 
 " Use YCM {{{
 " auto close the preview window
-let g:ycm_autoclose_preview_window_after_completion = 0
+let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_add_preview_to_completeopt = 1
 let g:ycm_key_list_select_completion = ['<Down>']
 let g:ycm_key_list_previous_completion = ['<Up>']
-let g:ycm_complete_in_comments = 1  "在注释输入中也能补全
-let g:ycm_complete_in_strings = 1   "在字符串输入中也能补全
-let g:ycm_use_ultisnips_completer = 1 "提示UltiSnips
+"在注释输入中也能补全
+let g:ycm_complete_in_comments = 0
+"在字符串输入中也能补全
+let g:ycm_complete_in_strings = 0
+"提示UltiSnips
+let g:ycm_use_ultisnips_completer = 1
 " 开启语法关键字补全
 let g:ycm_seed_identifiers_with_syntax=1
 " 回车作为选中
 let g:ycm_key_list_stop_completion = ['<CR>']
 
-"let g:ycm_seed_identifiers_with_syntax=1   "语言关键字补全, 不过python关键字都很短，所以，需要的自己打开
+"语言关键字补全, 不过关键字都很短，所以，需要的自己打开
+let g:ycm_seed_identifiers_with_syntax=1
 
 " 跳转到定义处, 分屏打开
 let g:ycm_goto_buffer_command = 'horizontal-split'
@@ -446,14 +487,6 @@ let g:ycm_register_as_syntastic_checker = 0
 " nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
 nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR>
 nnoremap <leader>gd :YcmCompleter GoToDeclaration<CR>
-" }}}
-
-" Use deoplete. {{{
-"let g:deoplete#enable_at_startup = 1
-" 使用相对路径，"./"会从当前文件的目录开始，而不是vim的working-directory
-"let g:deoplete#file#enable_buffer_path=1
-" 补全结束之后关闭预览窗口
-"autocmd CompleteDone * silent! pclose!
 " }}}
 
 " ultisnips {{{
@@ -521,6 +554,11 @@ nmap <Leader>r <Plug>(quickrun)
 map <F10> :QuickRun<CR>
 " }}}
 
+" CtrlSF {{{
+let g:ackprg = 'ag --nogroup --nocolor --column'
+let g:ackprg = 'ag --vimgrep'
+" }}}
+
 " }}}
 
 "RUN {{{
@@ -535,3 +573,54 @@ nmap <silent> t<C-g> :TestVisit<CR>   " t Ctrl+g
 "}}}
 
 "}}}
+
+" Use the correct file source, based on context
+function! ContextualFZF()
+    " Determine if inside a git repo
+    silent exec "!git rev-parse --show-toplevel"
+    redraw!
+
+    if v:shell_error
+        " Search in current directory
+        call fzf#run({
+          \'sink': 'e',
+          \'down': '40%',
+        \})
+    else
+        " Search in entire git repo
+        call fzf#run({
+          \'sink': 'e',
+          \'down': '40%',
+          \'source': 'git ls-tree --full-tree --name-only -r HEAD',
+        \})
+    endif
+endfunction
+
+" Configure FZF to find ctags
+" https://github.com/junegunn/fzf/wiki/Examples-(vim)#jump-to-tags
+function! s:tags_sink(line)
+  let parts = split(a:line, '\t\zs')
+  let excmd = matchstr(parts[2:], '^.*\ze;"\t')
+  execute 'silent e' parts[1][:-2]
+  let [magic, &magic] = [&magic, 0]
+  execute excmd
+  let &magic = magic
+endfunction
+function! s:tags()
+  if empty(tagfiles())
+    echohl WarningMsg
+    echom 'Preparing tags'
+    echohl None
+    call system('ctags -R --exclude=.git --exclude=node_modules --html-kinds=-ij')
+  endif
+
+  call fzf#run({
+  \ 'source':  'cat '.join(map(tagfiles(), 'fnamemodify(v:val, ":S")')).
+  \            '| grep -v -a ^!',
+  \ 'options': '+m -d "\t" --with-nth 1,4.. -n 1 --tiebreak=index',
+  \ 'down':    '40%',
+  \ 'sink':    function('s:tags_sink')})
+endfunction
+command! Tags call s:tags()
+nnoremap tt :Tags<CR>
+nmap tt :Tags<CR>
