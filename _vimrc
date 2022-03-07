@@ -124,6 +124,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'leafgarland/typescript-vim'  " syntax highlight
   Plug 'Quramy/tsuquyomi'
 
+  " Golang
+  Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
   " Jsonnet
   Plug 'google/vim-jsonnet'
 
